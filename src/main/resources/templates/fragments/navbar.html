@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+  <div th:fragment="navbar">
+    <!-- Shopee Top Bar -->
+    <div class="shopee-top-bar">
+      <div class="container d-flex justify-content-between align-items-center">
+        <div class="d-flex gap-3">
+          <a href="#"><i class="bi bi-shop me-1"></i>Kênh Người Bán</a>
+          <span class="text-white-50">|</span>
+          <a href="#"><i class="bi bi-phone me-1"></i>Tải ứng dụng</a>
+          <span class="text-white-50">|</span>
+          <a href="#"><i class="bi bi-share me-1"></i>Kết nối</a>
+        </div>
+        <div class="d-flex gap-3 align-items-center">
+          <a href="#"><i class="bi bi-bell me-1"></i>Thông báo</a>
+          <a href="#"><i class="bi bi-question-circle me-1"></i>Hỗ trợ</a>
+          <span class="text-white-50">|</span>
+
+          <!-- If Not Logged In -->
+          <th:block th:if="${currentUser == null}">
+            <a th:href="@{/register}" class="fw-semibold">Đăng Ký</a>
+            <span class="text-white-50">|</span>
+            <a th:href="@{/login}" class="fw-semibold">Đăng Nhập</a>
+          </th:block>
+
+          <!-- If Logged In -->
+          <th:block th:if="${currentUser != null}">
+            <div class="dropdown">
+              <a class="dropdown-toggle text-white fw-bold text-decoration-none" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-person-circle me-1"></i>
+                <span th:text="${currentUser.name}">Người dùng</span>
+              </a>
+              <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                <li><a class="dropdown-item" th:href="@{/user/orders}"><i class="bi bi-bag-check me-2"></i>Đơn Mua của tôi</a></li>
+                <li th:if="${currentUser.role == 1}"><hr class="dropdown-divider"></li>
+                <li th:if="${currentUser.role == 1}"><a class="dropdown-item text-danger fw-bold" th:href="@{/admin}"><i class="bi bi-speedometer2 me-2"></i>Quản trị Shop (Admin)</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item text-muted" th:href="@{/logout}"><i class="bi bi-box-arrow-right me-2"></i>Đăng Xuất</a></li>
+              </ul>
+            </div>
+          </th:block>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Navigation Header -->
+    <header class="shopee-header">
+      <div class="container d-flex align-items-center justify-content-between">
+        <!-- Logo -->
+        <a th:href="@{/}" class="shopee-logo">
+          <i class="bi bi-bag-heart-fill"></i>
+          <span>Shopee</span>
+        </a>
+
+        <!-- Search Bar -->
+        <div class="flex-grow-1 mx-4" style="max-width: 720px;">
+          <form th:action="@{/search}" method="get" class="shopee-search-box">
+            <input type="text" name="keyword" th:value="${searchKeyword}" placeholder="Shopee bao ship 0Đ - Tìm kiếm sản phẩm, thương hiệu..." required>
+            <button type="submit">
+              <i class="bi bi-search me-1"></i>
+            </button>
+          </form>
+          <div class="d-flex gap-3 mt-1 text-white-50" style="font-size: 11px; padding-left: 4px;">
+            <a th:href="@{/category/1}" class="text-white-50 text-decoration-none">Điện thoại</a>
+            <a th:href="@{/category/2}" class="text-white-50 text-decoration-none">Laptop</a>
+            <a th:href="@{/category/3}" class="text-white-50 text-decoration-none">Áo thun</a>
+            <a th:href="@{/category/4}" class="text-white-50 text-decoration-none">Váy nữ</a>
+            <a th:href="@{/category/5}" class="text-white-50 text-decoration-none">Phụ kiện</a>
+          </div>
+        </div>
+
+        <!-- Cart Icon -->
+        <div class="d-flex align-items-center">
+          <a th:href="@{/cart}" class="shopee-cart-icon-btn position-relative" title="Giỏ hàng">
+            <i class="bi bi-cart3"></i>
+            <span class="shopee-cart-badge" th:text="${cartCount ?: 0}">0</span>
+          </a>
+        </div>
+      </div>
+    </header>
+  </div>
+</body>
+</html>

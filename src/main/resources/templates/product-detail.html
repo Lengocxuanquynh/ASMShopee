@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title th:text="${product.name} + ' | Shopee Việt Nam'">Chi tiết sản phẩm | Shopee</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" th:href="@{/static/css/shopee.css}">
+</head>
+<body>
+  <!-- Navigation Header Fragment -->
+  <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+  <main class="main-content py-3">
+    <div class="container">
+
+      <!-- Breadcrumb -->
+      <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb small">
+          <li class="breadcrumb-item"><a th:href="@{/}" class="text-decoration-none text-muted">Shopee</a></li>
+          <li class="breadcrumb-item">
+            <a th:href="@{'/category/' + ${product.category.id}}" class="text-decoration-none text-muted" th:text="${product.category.name}">Danh mục</a>
+          </li>
+          <li class="breadcrumb-item active text-truncate" style="max-width: 300px;" aria-current="page" th:text="${product.name}">Tên sản phẩm</li>
+        </ol>
+      </nav>
+
+      <!-- Main Product Details Card -->
+      <div class="bg-white rounded-3 p-4 shadow-sm mb-4">
+        <div class="row g-4">
+
+          <!-- Left Column: Images -->
+          <div class="col-lg-5">
+            <div class="border rounded-2 p-2 text-center bg-light position-relative mb-2">
+              <img th:if="${product.images != null && !product.images.isEmpty()}"
+                   th:src="@{'/uploads/' + ${product.images[0].name}}"
+                   id="mainProductImage"
+                   class="img-fluid rounded" style="max-height: 400px; object-fit: contain;" alt="Product Image"
+                   onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=80';">
+              <img th:if="${product.images == null || product.images.isEmpty()}"
+                   src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=80"
+                   id="mainProductImage"
+                   class="img-fluid rounded" style="max-height: 400px; object-fit: contain;" alt="Default Product">
+            </div>
+
+            <!-- Thumbnail list -->
+            <div class="d-flex gap-2 overflow-auto" th:if="${product.images != null && product.images.size() > 1}">
+              <th:block th:each="img : ${product.images}">
+                <img th:src="@{'/uploads/' + ${img.name}}"
+                     class="border rounded p-1 cursor-pointer"
+                     style="width: 70px; height: 70px; object-fit: cover; cursor: pointer;"
+                     onclick="document.getElementById('mainProductImage').src=this.src;">
+              </th:block>
+            </div>
+          </div>
+
+          <!-- Right Column: Details & Order Form -->
+          <div class="col-lg-7">
+            <div class="d-flex align-items-center gap-2 mb-2">
+              <span class="badge bg-danger">Yêu Thích+</span>
+              <span class="badge bg-secondary" th:text="${product.category.name}">Danh mục</span>
+            </div>
+
+            <h3 class="fw-bold text-dark mb-3" th:text="${product.name}">Tên sản phẩm Shopee chính hãng</h3>
+
+            <!-- Rating & Sold -->
+            <div class="d-flex align-items-center gap-3 mb-3 pb-3 border-bottom text-muted small">
+              <div class="text-danger fw-bold border-end pe-3">
+                <span class="text-decoration-underline">5.0</span>
+                <i class="bi bi-star-fill text-warning ms-1"></i>
+                <i class="bi bi-star-fill text-warning"></i>
+                <i class="bi bi-star-fill text-warning"></i>
+                <i class="bi bi-star-fill text-warning"></i>
+                <i class="bi bi-star-fill text-warning"></i>
+              </div>
+              <div class="border-end pe-3">
+                <span class="fw-bold text-dark">128</span> Đánh Giá
+              </div>
+              <div>
+                <span class="fw-bold text-dark">560</span> Đã Bán
+              </div>
+            </div>
+
+            <!-- Price Box -->
+            <div class="p-3 rounded-2 mb-4" style="background-color: #fafafa;">
+              <div class="d-flex align-items-baseline gap-3">
+                <span class="text-decoration-line-through text-muted fs-5"
+                      th:text="${#numbers.formatDecimal(product.price * 1.3, 0, 'POINT', 0, 'COMMA')} + ' ₫'">0 ₫</span>
+                <span class="display-6 fw-bold text-danger"
+                      th:text="${#numbers.formatDecimal(product.price, 0, 'POINT', 0, 'COMMA')} + ' ₫'">0 ₫</span>
+                <span class="badge bg-danger">-30% GIẢM</span>
+              </div>
+              <div class="mt-2 text-muted small">
+                <i class="bi bi-shield-check text-success me-1"></i>Shopee Đảm Bảo: Trả hàng miễn phí 15 ngày
+              </div>
+            </div>
+
+            <!-- Add to Cart / Buy Form -->
+            <form th:action="@{/cart/add}" method="post">
+              <input type="hidden" name="productId" th:value="${product.id}">
+
+              <!-- Quantity Selector -->
+              <div class="row align-items-center mb-4">
+                <div class="col-sm-3 text-muted">Số lượng</div>
+                <div class="col-sm-9 d-flex align-items-center gap-3">
+                  <div class="input-group" style="width: 140px;">
+                    <button class="btn btn-outline-secondary" type="button" onclick="decrementQty()">-</button>
+                    <input type="number" id="qtyInput" name="quantity" class="form-control text-center" value="1" min="1" th:max="${product.quantity}">
+                    <button class="btn btn-outline-secondary" type="button" onclick="incrementQty()">+</button>
+                  </div>
+                  <span class="text-muted small" th:text="${product.quantity} + ' sản phẩm có sẵn'">0 có sẵn</span>
+                </div>
+              </div>
+
+              <!-- Action Buttons -->
+              <div class="d-flex gap-3">
+                <button type="submit" name="buyNow" value="false" class="btn btn-shopee-outline px-4 py-2 d-flex align-items-center gap-2">
+                  <i class="bi bi-cart-plus fs-5"></i>
+                  <span>Thêm Vào Giỏ Hàng</span>
+                </button>
+                <button type="submit" name="buyNow" value="true" class="btn btn-shopee-orange px-5 py-2 fw-bold">
+                  Mua Ngay
+                </button>
+              </div>
+            </form>
+
+            <div class="mt-4 pt-4 border-top">
+              <div class="row g-2 text-muted small">
+                <div class="col-md-4"><i class="bi bi-truck text-danger me-1"></i>Miễn phí vận chuyển</div>
+                <div class="col-md-4"><i class="bi bi-arrow-counterclockwise text-danger me-1"></i>7 ngày đổi trả</div>
+                <div class="col-md-4"><i class="bi bi-patch-check text-danger me-1"></i>Chính hãng 100%</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- Description & Specs Section -->
+      <div class="bg-white rounded-3 p-4 shadow-sm mb-4">
+        <h5 class="fw-bold text-uppercase border-bottom pb-2 mb-3">CHI TIẾT SẢN PHẨM</h5>
+        <div class="table-responsive">
+          <table class="table table-borderless table-sm small" style="max-width: 600px;">
+            <tr>
+              <td class="text-muted" style="width: 180px;">Danh Mục</td>
+              <td><a th:href="@{'/category/' + ${product.category.id}}" th:text="${product.category.name}" class="text-decoration-none text-danger fw-semibold">Danh mục</a></td>
+            </tr>
+            <tr>
+              <td class="text-muted">Kho hàng</td>
+              <td th:text="${product.quantity}">100</td>
+            </tr>
+            <tr>
+              <td class="text-muted">Gửi từ</td>
+              <td>Hà Nội / TP. Hồ Chí Minh</td>
+            </tr>
+            <tr>
+              <td class="text-muted">Tình trạng</td>
+              <td class="text-success fw-semibold">Còn hàng (Mới 100%)</td>
+            </tr>
+          </table>
+        </div>
+
+        <h5 class="fw-bold text-uppercase border-bottom pb-2 mt-4 mb-3">MÔ TẢ SẢN PHẨM</h5>
+        <div class="lh-lg text-secondary">
+          <p>Chào mừng bạn đến với cửa hàng chính hãng trên Shopee! Sản phẩm <strong><span th:text="${product.name}"></span></strong> được đảm bảo chất lượng hàng đầu, cam kết chính hãng 100%, bảo hành uy tín.</p>
+          <ul>
+            <li>Thiết kế hiện đại, tinh xảo, đáp ứng nhu cầu sử dụng cao cấp.</li>
+            <li>Đóng gói cẩn thận 2 lớp chống sốc, giao hàng nhanh chóng toàn quốc.</li>
+            <li>Hỗ trợ tư vấn nhiệt tình 24/7 trước và sau khi mua hàng.</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Related Products -->
+      <div th:if="${relatedProducts != null && !relatedProducts.isEmpty()}">
+        <h5 class="fw-bold text-uppercase text-danger mb-3">
+          <i class="bi bi-bag-heart me-2"></i>CÁC SẢN PHẨM TƯƠNG TỰ
+        </h5>
+        <div class="row row-cols-2 row-cols-md-4 row-cols-lg-5 g-3">
+          <div class="col" th:each="rProd : ${relatedProducts}">
+            <div class="shopee-card">
+              <a th:href="@{'/product/' + ${rProd.id}}" class="shopee-card-img-wrapper d-block text-decoration-none">
+                <img th:if="${rProd.images != null && !rProd.images.isEmpty()}"
+                     th:src="@{'/uploads/' + ${rProd.images[0].name}}"
+                     class="shopee-card-img" alt="Product Image"
+                     onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&q=80';">
+                <img th:if="${rProd.images == null || rProd.images.isEmpty()}"
+                     src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&q=80"
+                     class="shopee-card-img" alt="Default Product">
+              </a>
+              <div class="shopee-card-body">
+                <a th:href="@{'/product/' + ${rProd.id}}" class="text-decoration-none">
+                  <div class="shopee-card-title" th:text="${rProd.name}">Tên sản phẩm</div>
+                </a>
+                <span class="shopee-card-price" th:text="${#numbers.formatDecimal(rProd.price, 0, 'POINT', 0, 'COMMA')} + ' ₫'">0 ₫</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Footer Fragment -->
+  <div th:replace="~{fragments/footer :: footer}"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    function incrementQty() {
+      const input = document.getElementById('qtyInput');
+      const max = parseInt(input.getAttribute('max')) || 999;
+      let val = parseInt(input.value) || 1;
+      if (val < max) {
+        input.value = val + 1;
+      }
+    }
+    function decrementQty() {
+      const input = document.getElementById('qtyInput');
+      let val = parseInt(input.value) || 1;
+      if (val > 1) {
+        input.value = val - 1;
+      }
+    }
+  </script>
+</body>
+</html>
